@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react'
-import heroImg from './assets/hero.png'
+import provadisLogo from './assets/provadis_logo.png'
 import './App.css'
 
 type IncidentStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
@@ -262,7 +262,7 @@ function App() {
             Nachrichtenhistorie pro Quelle nachvollziehen.
           </p>
         </div>
-        <img className="brand-logo" src={heroImg} alt="Provadis logo" />
+        <img className="brand-logo" src={provadisLogo} alt="Provadis logo" />
       </header>
 
       {feedback ? (
