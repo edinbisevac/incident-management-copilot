@@ -124,9 +124,13 @@ function App() {
   const [alarms, setAlarms] = useState<Alarm[]>([])
   const [incidentForm, setIncidentForm] = useState(initialIncidentForm)
   const [alarmForm, setAlarmForm] = useState(initialAlarmForm)
+  const [messageSource, setMessageSource] = useState('')
+  const [sourceAlarms, setSourceAlarms] = useState<Alarm[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [messagesError, setMessagesError] = useState('')
 
   useEffect(() => {
     void loadData()
@@ -269,10 +273,36 @@ function App() {
     try {
       await apiRequest<void>(`/api/alarms/${id}`, { method: 'DELETE' })
       setAlarms((items) => items.filter((alarm) => alarm.id !== id))
+      setSourceAlarms((items) => items.filter((alarm) => alarm.id !== id))
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(toErrorMessage(error))
     }
+  }
+
+  async function openMessagesModal(source: string) {
+    setMessageSource(source)
+    setSourceAlarms([])
+    setMessagesError('')
+    setIsMessagesLoading(true)
+
+    try {
+      const alarmsBySource = await apiRequest<Alarm[]>(
+        `/api/alarms?source=${encodeURIComponent(source)}`,
+      )
+      setSourceAlarms(alarmsBySource)
+    } catch (error) {
+      setMessagesError(toErrorMessage(error))
+    } finally {
+      setIsMessagesLoading(false)
+    }
+  }
+
+  function closeMessagesModal() {
+    setMessageSource('')
+    setSourceAlarms([])
+    setMessagesError('')
+    setIsMessagesLoading(false)
   }
 
   return (
@@ -446,13 +476,14 @@ function App() {
                 <th>Source</th>
                 <th>Status</th>
                 <th>Prioritaet</th>
+                <th>Nachrichten</th>
                 <th>Aktionen</th>
               </tr>
             </thead>
             <tbody>
               {incidents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="empty-state">
+                  <td colSpan={8} className="empty-state">
                     Keine Incidents vorhanden.
                   </td>
                 </tr>
@@ -496,6 +527,19 @@ function App() {
                           </option>
                         ))}
                       </select>
+                    </td>
+                    <td>
+                      {incident.source ? (
+                        <button
+                          type="button"
+                          className="secondary-button"
+                          onClick={() => void openMessagesModal(incident.source)}
+                        >
+                          Nachrichten
+                        </button>
+                      ) : (
+                        '-'
+                      )}
                     </td>
                     <td>
                       <button
@@ -562,6 +606,49 @@ function App() {
           </table>
         </div>
       </section>
+
+      {messageSource ? (
+        <div className="modal-backdrop" role="presentation" onClick={closeMessagesModal}>
+          <div
+            className="modal panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="messages-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="section-header modal-header">
+              <div>
+                <h2 id="messages-modal-title">Nachrichten fuer {messageSource}</h2>
+                <p>Alle Alarme der ausgewaehlten Source.</p>
+              </div>
+              <button type="button" className="secondary-button" onClick={closeMessagesModal}>
+                Schliessen
+              </button>
+            </div>
+
+            {messagesError ? <div className="message error">{messagesError}</div> : null}
+            {isMessagesLoading ? <div className="message">Nachrichten werden geladen...</div> : null}
+
+            {!isMessagesLoading && !messagesError ? (
+              sourceAlarms.length === 0 ? (
+                <div className="message">Keine Alarmnachrichten fuer diese Source gefunden.</div>
+              ) : (
+                <div className="modal-list">
+                  {sourceAlarms.map((alarm) => (
+                    <article key={alarm.id} className="modal-list-item">
+                      <div className="modal-list-meta">
+                        <strong>{severityLabels[alarm.severity]}</strong>
+                        <span>{formatDateTime(alarm.createdAt)}</span>
+                      </div>
+                      <p>{alarm.message}</p>
+                    </article>
+                  ))}
+                </div>
+              )
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </main>
   )
 }
