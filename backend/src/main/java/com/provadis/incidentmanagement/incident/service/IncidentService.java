@@ -1,5 +1,6 @@
 package com.provadis.incidentmanagement.incident.service;
 
+import com.provadis.incidentmanagement.alarm.repository.AlarmRepository;
 import com.provadis.incidentmanagement.incident.exception.IncidentNotFoundException;
 import com.provadis.incidentmanagement.incident.model.Incident;
 import com.provadis.incidentmanagement.incident.model.IncidentPriority;
@@ -8,12 +9,14 @@ import com.provadis.incidentmanagement.incident.repository.IncidentRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class IncidentService {
 
     private final IncidentRepository incidentRepository;
+    private final AlarmRepository alarmRepository;
 
     public List<Incident> findAll() {
         return incidentRepository.findAll();
@@ -40,8 +43,10 @@ public class IncidentService {
         return incidentRepository.save(incident);
     }
 
+    @Transactional
     public void delete(Long id) {
         Incident incident = getIncidentOrThrow(id);
+        alarmRepository.deleteByIncident(incident);
         incidentRepository.delete(incident);
     }
 

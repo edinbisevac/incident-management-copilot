@@ -12,4 +12,6 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 	List<Alarm> findBySourceOrderByCreatedAtDesc(String source);
 
 	List<Alarm> findByIncident(Incident incident);
+
+	void deleteByIncident(Incident incident);
 }
