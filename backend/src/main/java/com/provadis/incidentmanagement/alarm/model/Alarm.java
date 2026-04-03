@@ -7,8 +7,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.provadis.incidentmanagement.incident.model.Incident;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,4 +44,9 @@ public class Alarm {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @JsonIgnore
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "incident_id", nullable = false)
+    private Incident incident;
 }
