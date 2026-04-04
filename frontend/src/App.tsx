@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from 'react'
+import provadisLogo from './assets/provadis_logo.png'
 import './App.css'
 
 type IncidentStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
@@ -308,15 +309,22 @@ function App() {
   return (
     <main className="app-shell">
       <header className="page-header">
-        <div>
+        <div className="page-title">
           <h1>Incident Management MVP</h1>
           <p>
             Einfache Oberflaeche fuer manuelle Incidents und eingehende Alarme.
           </p>
         </div>
-        <button type="button" onClick={() => void loadData()} disabled={isLoading}>
-          Aktualisieren
-        </button>
+        <div className="page-actions">
+          <img
+            className="brand-logo"
+            src={provadisLogo}
+            alt="Provadis"
+          />
+          <button type="button" onClick={() => void loadData()} disabled={isLoading}>
+            Aktualisieren
+          </button>
+        </div>
       </header>
 
       {errorMessage ? <div className="message error">{errorMessage}</div> : null}
